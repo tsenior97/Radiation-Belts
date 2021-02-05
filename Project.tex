@@ -1,0 +1,982 @@
+\documentclass[14paper,11pt,hidelinks]{article}
+\usepackage{blindtext}
+\usepackage[left=1.5cm, right=1.5cm, top=2cm]{geometry}
+\usepackage[pdftex]{graphicx}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{listings}
+\usepackage[nottoc]{tocbibind}
+\usepackage{placeins}
+% Import the natbib package and set bibliography style
+\usepackage{natbib}
+\bibliographystyle{myapalike}
+% Import hyperref package to create hyperlinks for URLs
+\usepackage{hyperref}
+\lstset{ 
+	language=Matlab,                	
+	numbers=left,                  			
+	numberstyle=\footnotesize,      		
+	stepnumber=1,                   			
+	numbersep=5pt,                  		
+	showspaces=false,               		
+	showstringspaces=false,         		
+	showtabs=false,                 			
+	breaklines=true,                			
+	breakatwhitespace=false,        		
+	escapeinside={\%*}{*)} }
+\begin{document}
+
+\begin{titlepage}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+\center
+\textsc{\LARGE  University  of Dundee}\\[1.5cm]
+\textsc{\Large School of Science and Engineering}\\[0.5cm]
+\HRule \\[0.4cm]
+{ \huge \bfseries Modelling Earth's radiation belts}\\[0.4cm]
+\HRule \\[1.5cm]
+\begin{minipage}{0.4\textwidth}
+\begin{flushleft} \large
+\emph{Author:}\\
+Thomas Senior 160011739
+\end{flushleft}
+\begin{flushleft} \large
+\emph{Supervisor:}\\
+Dr Alexander Russell
+\end{flushleft}
+\end{minipage}
+{\large \today}\\[2cm]
+\includegraphics{logo.png}\\[1cm]
+\end{titlepage}
+
+\newpage
+\tableofcontents
+\newpage
+\begin{abstract}
+\noindent
+
+% 1. INTRO = What Van Allen belts are
+% 2. INTRO = What the gaps in knowledge are (i.e. the belts are not constant, and therefore we need to be able to model them)
+% 3. METHODS = What you did to fill this gap
+% 4. RESULTS = What you found (when it works, when it doesn't)
+% 5. DISCUSSION = What this means e.g. can predict regions of highest radiation for space travel, could be developed further in the future by doing X
+The Van Allen belts are regions of high radiation around the Earth, which are important because they affect how humans travel through space. The belts are made of charged particles, and we would like to gain a better understanding of how these particles become trapped and under what conditions they escape. The main purpose of this project was to investigate how a charged particle moves in electromagnetic fields, using orbit theory to explain how the particles become trapped and how they move around Earth, and using MATLAB to model the particle trajectory. I found that the simulation accurately mapped a nonrelativistic particle in a magnetic field close to the Earth. The model does not consider the outer belt, which is not constant and so the model is less accurate as you consider particles further away from Earth. The findings of this project give us greater insight into how the particles travel as they move around the Earth, and this is crucial for identifying the regions of highest radiation that must be avoided during space travel. 
+
+
+
+
+
+\end{abstract}
+\newpage
+%1
+\section{Introduction}
+In this project I will be investigating the differential equations that govern the motion of charged particles in the electromagnetic fields around the Earth. Using particle orbit theory to explain how these particles become trapped and move in the field, I will construct a model of the Earth's inner magnetic field, solving the particle's trajectories in MATLAB. Finally, I will compare the models I have made with the theory.
+\newline
+\newline
+The radiation belts around the Earth are called the Van Allen radiation belts. The discovery of these belts was credited to James Van Allen \citep{van_allen_observation_1958}, who found evidence of their existence after the launch of the Explorer 1 in 1958 \citep{garner_studying_2018}. The Van Allen radiation belts provide protection from high-energy charged particles. The presence of these radiation belts also makes it more difficult to launch rockets into space, because the high doses of radiation would be harmful to astronauts. Following this discovery, rockets were fitted with protective material and launched around the belts in order to avoid them.
+\newline
+\newline
+Current research on the Van Allen belts includes the Van Allen Probes launched on August 30th, 2012 \citep{zell_van_2017}. These are two identical probes that were launched with the aim of studying how charged particles in the belt are accelerated and lost, and to assess how the belts change. The probes also improve our understanding of how particles get into the belt and under what conditions. In 2013 the Van Allen probes demonstrated that the number of belts is not constant as they discovered a third belt, which formed and then decayed again in the span of 4 weeks \citep{zell_van_2017}.
+\newline
+\newline
+The Van Allen belts consist of a series of inner belts that are stable and change very little, while the outer radiation belts are affected by geoelectric storms from the sun. There is no real gap between the two belts, but rather they merge gradually. The belts form a doughnut shape around the Earth along the dipole field lines. The formula for the dipole field is \citep{walt_introduction_2005};
+\begin{equation}
+B_r=-2B_0\left(\frac{R_E}{r}\right)^3cos(\theta),
+\qquad 
+B_\theta=-B_0\left(\frac{R_E}{r}\right)^3sin(\theta),
+\qquad
+|B|=B_0\left(\frac{R_E}{r}\right)^3\sqrt{1+3cos(\theta)^2}
+\end{equation}
+The parameter values that apply to the Earth are \begin{math}B_0\end{math}, which is the mean value of the magnetic field at the magnetic equator. \begin{math}R_E\end{math} the mean radius of the Earth, where \begin{math}\theta\end{math} is measured from the North magnetic pole.
+\newline
+\begin{figure}[!ht]
+\centering
+\includegraphics[scale=0.3]{Dipole.jpg} 
+\caption{ Magnetic dipoles of the Earth}
+\end{figure}
+\newline
+The magnetic field lines form loops from Earth's South pole to its the North pole (Figure 1). The important features to note are how the field lines all converge at the poles, making them more dense there. This is where the magnetic mirrors will occur, causing the particles to go back along the field lines and become trapped. Another feature of these field lines is that they spread out in the middle; this is where the most photon radiation accrues due to acceleration of particles.
+
+
+
+%2
+\section{Particle orbit theory}
+For the motion of a particle in a magnetic field \textbf{B}, electric field \textbf{E} of charge q, mass m and external non-electromagnetic force \textbf{F}, the equation we will be using is;
+\begin{equation}
+\frac{d}{dt}\left(m\frac{d\mathbf{r}}{dt}\right)=q\left(\frac{d\mathbf{r}}{dt}\times\mathbf{B}+\mathbf{E}\right)+\mathbf{F}
+\end{equation}
+This is Newton's 2\textsuperscript{nd} law and \textbf{r} is the position of the particle. For our problem the external non-electromagnetic force \textbf{F} will be gravity, \begin{math}\mathbf{F}=m\mathbf{g}\end{math}. This equation then can also be written as \citep{roederer_dynamics_2014};
+\begin{equation}
+m\frac{d\mathbf{v}}{dt}=q\left(\mathbf{v}\times\mathbf{B}+\mathbf{E}\right)+m\mathbf{g}
+\end{equation}
+Where \textbf{v} is the velocity of the particle.
+
+
+
+%2.1 
+\subsection{Uniform magnetic field}
+If we consider a uniform magnetic field \textbf{B}\begin{math}\ne\end{math}0 when \textbf{E}=0 and \textbf{g}=0 then our equation becomes \citep[pp. 19-62]{sturrock_plasma_1994};
+\begin{equation}
+m\frac{d\mathbf{v}}{dt}=q\left(\mathbf{v}\times\mathbf{B}\right)
+\end{equation}
+Letting \textbf{B}=(0,0,B) and \begin{math} \mathbf{v}=(v_1,v_2,v_3) \end{math} this leads to (6) becoming;
+\begin{equation}
+\frac{dv_1}{dt}=\frac{qB}{m}v_2
+\qquad
+\frac{dv_2}{dt}=\frac{-qB}{m}v_1
+\qquad
+\frac{dv_3}{dt}=0
+\end{equation}
+As $v_3$ is on the same axis as B, this means \begin{math} v_\parallel \end{math} is constant. Now we introduce \begin{math}\omega\end{math} as the symbol for the gyro-frequency and \begin{math}\varepsilon\end{math} for the change of sign of the charge;
+\begin{equation}
+\omega=\frac{|q|}{m}B
+\end{equation}
+\begin{equation}
+\varepsilon=\frac{q}{|q|}
+\end{equation}
+For an electron its charge is negative 1.6022e-19C with mass 9.1e-31 kg, and a proton has a positive charge of 1.6022e-19C and mass 1.6726e-27 kg \citep{beiser_physics_1991}. This means for an electron \begin{math} \omega_e=1.763e11/Bs^{-1}\end{math}, and for a proton \begin{math} \omega_p=9.58e11/Bs^{-1}\end{math}. (6) and (7) satisfied equations relating \begin{math} v_\bot \end{math}, where \begin{math} v_\bot \end{math} is the velocity perpendicular to the axis the magnetic field is on, such that;
+\begin{equation}
+v_1=v_\bot \cos(\omega t)
+\end{equation}
+\begin{equation}
+v_2=-\varepsilon v_\bot \sin(\omega t)
+\end{equation}
+Hence,
+\begin{equation}
+v_\bot=\left(v_1^2+v_2^2\right)^\frac{1}{2}
+\end{equation}
+If we integrate this to get the position relating r to time we get;
+\begin{equation}
+x=r_\bot \sin(\omega t)+x_0
+\end{equation}
+\begin{equation}
+y=\varepsilon r_\bot \cos(\omega t)+y_0
+\end{equation}
+\begin{equation}
+z=v_\parallel t+z_0
+\end{equation}
+where \begin{math} r_\bot \end{math} is the Larmor radius of the particle in this field where;
+\begin{equation}
+r_\bot=\frac{v_\bot}{\omega}
+\end{equation}
+The centre of this circle, known as the guiding centre, is described by the locus \begin{math} \mathbf{r_g}=(x_0,y_0,v_\parallel t+z_0) \end{math}.
+Particles travel in a helical motion along the magnetic line; its radius stays constant but has a relationship with the velocity. As the velocity can be represented as \begin{math}\mathbf{v_\bot}(t)=\mathbf{v_d}+\mathbf{v_g}(t)\end{math}, where \begin{math}\mathbf{v_d}\end{math} is the drift velocity and \begin{math}\mathbf{v_g}(t)\end{math} is the gyro velocity, and as drift velocity is constant, a bigger radius means that the particle will have a bigger gyro velocity. 
+
+
+%2.2
+\subsection{Uniform magnetic field and with an electric field and gravity}
+We consider a uniform magnetic field \textbf{B}\begin{math}\ne\end{math}0 and a uniform q\textbf{E}+m\textbf{g}\begin{math}\ne\end{math}0. We shall put these into our original equation (7) and find how the particle travels, equation (3) stays the same but if we rewrite is so the q and m are on the same side;
+\begin{equation}
+\frac{d\mathbf{v}}{dt}=\frac{q}{m}\left(\mathbf{v}\times\mathbf{B}+\mathbf{E}\right)+\mathbf{g}
+\end{equation}
+Also considering that \begin{math}\mathbf{v_\bot}(t)=\mathbf{v_d}+\mathbf{v_g}(t)\end{math} we can split the equation into a time dependent part and a time independent part, first noting that from equation (5) that \begin{math}\frac{dv_3}{dt}=0\end{math}; this means that by splitting it first up into parallel and perpendicular forms;
+\begin{equation}
+\frac{dv_\parallel}{dt}=\frac{q}{m}\mathbf{E}_\parallel+\mathbf{g}_\parallel
+\end{equation}
+And
+\begin{equation}
+\frac{d\mathbf{v}_\bot}{dt}=\frac{q}{m}\left(\mathbf{v}_\bot\times\mathbf{B}+\mathbf{E}_\bot\right)+\mathbf{g}_\bot
+\end{equation}
+now using \begin{math}\mathbf{v_\bot}(t)=\mathbf{v_d}+\mathbf{v_g}(t)\end{math} we get that;
+\begin{equation}
+\frac{d\mathbf{v}_g}{dt}=\frac{q}{m}\left(\mathbf{v}_d\times\mathbf{B}+\mathbf{v}_g\times\mathbf{B}+\mathbf{E}_\bot\right)+\mathbf{g}_\bot
+\end{equation}
+Splitting these up into time dependent and time independent gives us;
+\begin{equation}
+\frac{d\mathbf{v}_g}{dt}=\frac{q}{m}\left(\mathbf{v}_g\times\mathbf{B}\right)
+\end{equation}
+\begin{equation}
+\left(\mathbf{v}_d\times\mathbf{B}\right)+\mathbf{E}_\bot+\mathbf{g}_\bot=0
+\end{equation}
+Equation (20) is the time independent part and (19) the time dependent part. Now we see that our equation (19) has the same solution as equation (4), so we know that our particle will travel in a helical motion and that the gyro velocity is the same for a uniform magnetic field. Now we need to solve equation (20);
+\begin{equation}
+\mathbf{v}_d\times\mathbf{B}=-\left(\mathbf{E}_\bot+\mathbf{g}_\bot\right)
+\end{equation}
+Then cross-product both sides with \textbf{B} to get;
+\begin{equation}
+\mathbf{B}\times\left(\mathbf{v}_d\times\mathbf{B}\right)=\left(\mathbf{E}_\bot+\mathbf{g}_\bot\right)\times\mathbf{B}
+\end{equation}
+\begin{equation}
+\left(\mathbf{B}\cdot\mathbf{B}\right)\mathbf{v}_d-\left(\mathbf{B}\cdot\mathbf{v}_d\right)\mathbf{B}=\left(\mathbf{E}_\bot+\mathbf{g}_\bot\right)\times\mathbf{B}
+\end{equation}
+As \begin{math}\mathbf{B}=\left(0,0,B_0\right)\end{math} we can write this as;
+\begin{equation}
+B_0^2\mathbf{v}_d-B_0v_{dz}B_0\mathbf{e}_z=B_0^2\left(\mathbf{v}_d-v_{dz}\mathbf{e}_z\right)=B_0^2\mathbf{v}_{d\bot}
+\end{equation}
+This gives us;
+\begin{equation}
+B_0^2\mathbf{v}_{d\bot}=\mathbf{B}\times-\left(\mathbf{E}_\bot+\mathbf{g}_\bot\right)
+\end{equation}
+Which can be rewritten as;
+\begin{equation}
+||B||^2\mathbf{v}_d=\left(\mathbf{E}_\bot+\mathbf{g}_\bot\right)\times\mathbf{B}
+\end{equation}
+Hence;
+\begin{equation}
+\mathbf{v}_d=\frac{\left(\mathbf{E}_\bot+\mathbf{g}_\bot\right)\times\mathbf{B}}{||B||^2}
+\end{equation}
+So equation (27) shows us the drift velocity for our particle.
+We know that our gyro-frequency \begin{math} \omega \end{math} will still be the same as in our first field, but our Larmor radius \begin{math} r_\bot \end{math} will now be given as;
+\begin{equation}
+r_\bot=\frac{\mathbf{v}g(t)}{\omega}
+\end{equation}
+
+
+%3
+\section{Numerical solutions}
+In this section I have computed situations of the particle in both a uniform field with only a magnetic field, and also a uniform field with magnetic, electric and gravitational fields, along with different types of particles and accounting for how the field influences the way in which the particle trajectory changes. During the construction of the system to plot the trajectory of the particle I encountered some problems, due to how MATLAB normally computes \begin{math} sin \end{math} to a set accuracy. After several thousand iterations, the approximation of the value being calculated with the \begin{math} sin \end{math} function increased because of the rounding error, causing the trajectory to form a cone shape instead of the cylinder shape it should have been. I solved this by using the option command for ode45, opts=odeset('RelTol',1e-13,'AbsTol',1e-15); which decreased the effect of the rounding error such that the Larmor radius didn't slowly increase.
+\newline
+\newline
+I normalized the equations so that the numbers were smaller and easier to work with in MATLAB.  I did this by turning;
+\begin{equation}
+\frac{d\mathbf{v}}{dt}=\frac{q}{m}\left(\mathbf{v}\times\mathbf{B}+\mathbf{E}\right)+\mathbf{g}
+\end{equation}
+into
+\begin{equation}
+\frac{v_0}{\tau}\frac{d\tilde{\mathbf{v}}}{d\tilde{t}}=\frac{q}{m}\left(v_0B_0\tilde{\mathbf{v}}\times\tilde{\mathbf{B}}+E_0\tilde{\mathbf{E}}\right)+g_0\tilde{\mathbf{g}}
+\end{equation}
+\begin{equation}
+\frac{d\tilde{\mathbf{v}}}{d\tilde{t}}=\frac{q\tau B_0}{m}\left(\tilde{\mathbf{v}}\times\tilde{\mathbf{B}}+\frac{E_0}{v_0B_0}\tilde{\mathbf{E}}\right)+\frac{g_0\tau}{v_0}\tilde{\mathbf{g}}
+\end{equation}
+If we then set;
+\begin{equation}
+E_0=v_0B_0 
+\qquad
+g_0=\frac{v_0}{\tau}
+\qquad
+\tau=\frac{1}{\Omega}
+\qquad
+\Omega=\frac{eB_0}{m_p}
+\end{equation}
+Where e is the fundamental charge and \begin {math} m_p\end{math} is the mass of a proton, this leaves us with;
+\begin{equation}
+\frac{d\tilde{\mathbf{v}}}{d\tilde{t}}=\frac{qm_p}{em}\left(\tilde{\mathbf{v}}\times\tilde{\mathbf{B}}+\tilde{\mathbf{E}}\right)+\tilde{\mathbf{g}}
+\end{equation}
+Then with;
+\begin{equation}
+\tilde{m}=\frac{m}{m_p}
+\qquad
+\tilde{q}=\frac{q}{e}
+\end{equation}
+We get;
+\begin{equation}
+\frac{d\tilde{\mathbf{v}}}{d\tilde{t}}=\frac{\tilde{q}}{\tilde{m}}\left(\tilde{\mathbf{v}}\times\tilde{\mathbf{B}}+\tilde{\mathbf{E}}\right)+\tilde{\mathbf{g}}
+\end{equation}
+and
+\begin{equation}
+\frac{d\tilde{\mathbf{x}}}{d\tilde{t}}=\tilde{\mathbf{v}}
+\end{equation}
+This means for a proton \begin{math} \tilde{m}=1\end{math}, and as a proton is 1842 times heavier then an electron the mass of  \begin{math} \tilde{m}\end{math}  for an electron is \begin{math} 1842^{-1} \end{math}. The magnitude charge of an electron and proton is 1.6022e-19, with an electron having a negative charge and a proton having a positive one. This makes \begin{math} \tilde{q}=1\end{math} for the proton and \begin{math} \tilde{q}=-1\end{math} for an electron. With the normalized equation we can plot more easily in MATLAB.
+
+
+%3.1
+\subsection{Uniform B}
+I began by plotting a proton and electron in a uniform field \textbf{B} with no \textbf{E} or \textbf{g}. I set the initial velocity of the particles to \begin{math} \mathbf{v}=[1,1,1] \end{math}. I show below each trajectory in a 3D plot, top down view and a side view. Together these plots show how the smaller mass of the electron makes its Larmor radius much smaller but the gyro-frequency greater. It is also evident that the different charges of each particle give rise to opposing directions of helical motion: the proton goes clockwise through the field whereas the electron goes anti-clockwise;
+\newline
+\begin{figure}[h!]
+\centering
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{pB3D.jpg} 
+\caption*{Proton in 3D}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{pBt.jpg}
+\caption*{Proton top view}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{pBs.jpg}
+\caption*{Proton side view}
+\end{subfigure}
+\caption{}
+\end{figure}
+\begin{figure}[h!]
+\centering
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{eB3D.jpg} 
+\caption*{Electron in 3D}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{eBt.jpg}
+\caption*{Electron top view}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{eBs.jpg}
+\caption*{Electron side view}
+\end{subfigure}
+\caption{}
+\end{figure}
+\newline
+\FloatBarrier
+
+
+%3.2
+\subsection{Uniform B, E drift}
+Next I consider a field with a uniform \textbf{B} and uniform \textbf{E} field. With \begin{math} \mathbf{B}=[0,0,B_0] \end{math} and \begin{math} \mathbf{E}=[0,E_0,0] \end{math}, the electric field is acting perpendicular to the magnetic field. I began with an initial velocity of \begin{math} \mathbf{v}=[1,0,0] \end{math}. I plotted the proton and electron from a top down view and slowly increased the magnitude of \textbf{E} from 0 to 2. I introduced bigger steps once \begin{math} |\mathbf{E}| \end{math} was greater then 0.5, as the effects were becoming less noticeable. 
+\newline
+\begin{figure}[h!]
+\centering
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{pE0.jpg} 
+\caption*{Proton E=0}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{eE0.jpg}
+\caption*{Electron E=0}
+\end{subfigure}
+\caption{}
+\end{figure}
+\begin{figure}[h!]
+\centering
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{pE01.jpg} 
+\caption*{Proton E=0.1}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{eE01.jpg}
+\caption*{Electron E=0.1}
+\end{subfigure}
+\caption{}
+\end{figure}
+\begin{figure}[h!]
+\centering
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{pE02.jpg} 
+\caption*{Proton E=0.2}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{eE02.jpg}
+\caption*{Electron E=0.2}
+\end{subfigure}
+\caption{}
+\end{figure}
+\begin{figure}[h!]
+\centering
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{pE03.jpg} 
+\caption*{Proton E=0.3}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{eE03.jpg}
+\caption*{Electron E=0.3}
+\end{subfigure}
+\caption{}
+\end{figure}
+\begin{figure}[h!]
+\centering
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{pE04.jpg} 
+\caption*{Proton E=0.4}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{eE04.jpg}
+\caption*{Electron E=0.4}
+\end{subfigure}
+\end{figure}
+\begin{figure}[h!]
+\centering
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{pE05.jpg} 
+\caption*{Proton E=0.5}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{eE05.jpg}
+\caption*{Electron E=0.5}
+\end{subfigure}
+\caption{}
+\end{figure}
+\begin{figure}[h!]
+\centering
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{pE08.jpg} 
+\caption*{Proton E=0.8}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{eE08.jpg}
+\caption*{Electron E=0.8}
+\end{subfigure}
+\caption{}
+\end{figure}
+\begin{figure}[h!]
+\centering
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{pE10.jpg} 
+\caption*{Proton E=1.0}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{eE10.jpg}
+\caption*{Electron E=1.0}
+\end{subfigure}
+\caption{}
+\end{figure}
+\begin{figure}[h!]
+\centering
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{pE14.jpg} 
+\caption*{Proton E=1.4}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{eE14.jpg}
+\caption*{Electron E=1.4}
+\end{subfigure}
+\caption{}
+\end{figure}
+\begin{figure}[h!]
+\centering
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{pE18.jpg} 
+\caption*{Proton E=1.8}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{eE18.jpg}
+\caption*{Electron E=1.8}
+\end{subfigure}
+\caption{}
+\end{figure}
+\begin{figure}[h!]
+\centering
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{pE20.jpg} 
+\caption*{Proton E=2.0}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{eE20.jpg}
+\caption*{Electron E=2.0}
+\end{subfigure}
+\caption{}
+\end{figure}
+\FloatBarrier
+\noindent
+As you can see from the plots, the increase of \begin{math} |\mathbf{E}| \end{math} results in the Larmor radius decreasing as it approaches 1 and then increasing again beyond that. The Larmor radius is the same when \begin{math} |\mathbf{E}| \end{math} is 0 and 2 (but equal to 0 at 1), because of the initial velocity chosen.
+
+
+%3.3
+\subsection{Uniform B, E field with a parallel E}
+Now we consider a uniform field with \begin{math} \mathbf{B}=[0,0,B_0] \end{math} and \begin{math} \mathbf{E}=[0,0,E_0] \end{math}, such that the electric field is acting in the same direction as the magnetic field. Setting \begin{math} E_0=0.3 \end{math} gave the most desirable result in terms of gryo-frequency and ability to see the helical motion. I then set \begin{math} \mathbf{v}=[1,0,0] \end{math} and plotted the proton and electron in 3D and with a side view. As you can see from the images below, because the electric field acts parallel to the magnetic field it actually accelerates the particle in that direction. The electron's negative charge means that is accelerated in the opposite direction to the proton. 
+\newline
+\begin{figure}[h!]
+\centering
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{pBE3D.jpg} 
+\caption*{Proton with parallel E}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{pBEs.jpg}
+\caption*{Proton with parallel E}
+\end{subfigure}
+\caption{}
+\end{figure}
+\begin{figure}[h!]
+\centering
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{eBE3D.jpg} 
+\caption*{Electron with parallel E}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{eBEs.jpg}
+\caption*{Electron with parallel E}
+\end{subfigure}
+\caption{}
+\end{figure}
+\newline
+
+
+%3.4
+\subsection{ Uniform B and E,  with E acting in x and z axis}
+Now with the same initial velocity as the previous example and magnetic field, but with \begin{math} \mathbf{E}=[0,0.3,0.3] \end{math}. This demonstrates the effect of having the electric field both parallel and perpendicular to the magnetic field, causing the particle to travel in the x-axis while accelerating in the z-axis (see plots below). As previously shown, the electron and proton accelerate in opposite directions in the z-axis. If we included the electric field in the y-axis this would make the particle travel in both x and y directions, and would have the same effect as putting an electric force on the x-axis. 
+\newline
+\begin{figure}[h!]
+\centering
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{pBEE3D.jpg} 
+\caption*{Proton in 3D}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{pBEEt.jpg}
+\caption*{Proton top view}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{pBEEs.jpg}
+\caption*{Proton side view}
+\end{subfigure}
+\caption{}
+\end{figure}
+\begin{figure}[h!]
+\centering
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{eBEE3D.jpg} 
+\caption*{Electron in 3D}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{eBEEt.jpg}
+\caption*{Electron top view}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{eBEEs.jpg}
+\caption*{Electron side view}
+\end{subfigure}
+\caption{}
+\end{figure}
+\newline
+\FloatBarrier
+
+
+%4
+\section{Inhomogeneous magnetic field}
+First we must state the guiding centre approximation  \citep{boyd_physics_2003}. If the field experienced by the particles is small, such that the Larmor orbit is almost constant, we can determine the trajectory of the particles with;
+\begin{equation}
+\mathbf{B(r)}\simeq  \mathbf{B(r_0)}+\left(\delta\mathbf{r}\cdot \bigtriangledown\right)\mathbf{B}|_{\mathbf{r}=\mathbf{r_0}}
+\end{equation}
+where \begin{math} \mathbf{r_0} \end{math} is the instantaneous position of the guiding centre and \begin{math} \delta\mathbf{r}=\mathbf{r}-\mathbf{r_0}\end{math}, we also require that;
+\begin{equation}
+|\delta\mathbf{B}|=|\left(\delta\mathbf{r}\cdot \bigtriangledown\right)\mathbf{B}|\ll|\mathbf{B}|
+\end{equation}
+For the change of \textbf{B} over \begin{math} r_L \end{math}, this distance is small enough that the field will not change significantly. Inhomogenous fields have two different drifts that I am interested in: gradient and curvature drift. Both are useful when investigating how protons move through the Earth's magnetic field. 
+
+%%% I think the section below was accidentally repeated?
+
+%\begin{equation}
+%\mathbf{B(r)}\simeq  \mathbf{B(r_0)}+\left(\delta\mathbf{r}\cdot \bigtriangledown\right)\mathbf{B}|_{\mathbf{r}=\mathbf{r_0}}
+%\end{equation}
+%where \begin{math} \mathbf{r_0} \end{math} is the instantaneous position of the guiding centre and \begin{math} \delta\mathbf{r}=\mathbf{r}-\mathbf{r_0}\end{math}, we also require that;
+%\begin{equation}
+%|\delta\mathbf{B}|=|\left(\delta\mathbf{r}\cdot \bigtriangledown\right)\mathbf{B}|\ll|\mathbf{B}|
+%\end{equation}
+%For the change of \textbf{B} over \begin{math} r_L \end{math}, this distance is small enough that the field will not change significantly. 
+
+
+%4.1
+\subsection{Gradient drift} 
+With \textbf{B}=(0,0,B(y)) and \textbf{E}=0 gives us equation (5);
+\begin{equation}
+\frac{dv_1}{dt}=\frac{qB}{m}v_2,
+\qquad
+\frac{dv_2}{dt}=\frac{-qB}{m}v_1,
+\qquad
+\frac{dv_3}{dt}=0
+\end{equation}
+% center is American spelling
+Now using our assumption that \begin{math} \delta\mathbf{B}\ll\mathbf{B} \end{math}, we may use the initial position for the guiding centre to express \begin{math}qB/m=\omega\end{math} as;
+\begin{equation}
+\omega(y)\simeq\omega(y_0)+(y-y_0)\left.\frac{d\omega}{dy}\right\arrowvert_{y_0}=\omega_0+(y-y_0)\omega_0'
+\end{equation}
+Then we get from substituting this in and integrating;
+\begin{equation}
+v_1=v_\bot\cos(\omega t)-\frac{\omega_0' v_\bot^2}{2\omega_0^2}[1-\cos(2\omega_0 t)]
+\end{equation}
+\begin{equation}
+v_2=-v_\bot\sin(\omega t)-\frac{\omega_0' v_\bot^2}{2\omega_0^2}[\sin(2\omega_0 t)-2\cos(2\omega_0 t)]
+\end{equation}
+\begin{equation}
+v_3=v_\parallel
+\end{equation}
+All three equations satisfy the initial conditions for a uniform magnetic field. Oscillations occur at \begin{math} 2\omega_0\end{math} and \begin{math} \omega_0\end{math}. This gives us an average velocity over one period \begin{math} T=2\pi/\omega_0\end{math} as;
+\begin{equation}
+\mathbf{v}=\left[\frac{-v_\bot^2\omega_0'}{2\omega_0^2},0,v_\parallel\right]
+\end{equation}
+The magnetic field in the z direction with a gradient in the y direction forms a drift in the x direction. The gradient drift is written as;
+\begin{equation}
+\mathbf{v}_G=\frac{\left[K_\bot(\mathbf{B}\times\bigtriangledown)B\right]}{q B^3} 
+\end{equation}
+Where K is the kinetic energy;
+\begin{equation}
+\frac{1}{2}mv^2=K
+\end{equation}
+This can also be written as;
+\begin{equation}
+K=K_\bot+K_\parallel=\frac{1}{2}m(v_\bot^2+v_\parallel^2)
+\end{equation}
+
+
+%4.2
+\subsection{Curvature drift}
+If we now look at the example \begin{math} \mathbf{B}=(0,B_y(z),B) \end{math} for curvature drift this gives us;
+\begin{equation}
+\frac{dv_1}{dt}=\omega v_2-\omega_{y}v_3
+\end{equation}
+\begin{equation}
+\frac{dv_1}{dt}=-\omega v_1
+\end{equation}
+\begin{equation}
+\frac{dv_1}{dt}=\omega_{y}v_1
+\end{equation}
+Where \begin{math} \omega_{y}=(qB_{y}/m) \end{math} this gives us a \begin{math} v_C \end{math} where;
+\begin{equation}
+v_C=v_1=\frac{-v_\parallel^2\omega_y'}{\omega^2}=\frac{-m v_\parallel^2\left(\frac{dB_y}{dz}\right)}{qB^2}
+\end{equation}
+Making the curvature drift velocity;
+\begin{equation}
+\mathbf{v}_C=\frac{2K_\parallel(\mathbf{B}\times(\mathbf{B}\cdot \bigtriangledown)\mathbf{B}}{qB^4}
+\end{equation}
+There is a drift in the y-direction as well, which keeps the guiding centre moving parallel to \textbf{B};
+\begin{equation}
+\frac{v_2}{v_3}=\frac{v_\parallel\frac{\omega_y}{\omega}}{v_\parallel}=\frac{B_y}{B}
+\end{equation}
+Because of this curvature the particle feels a centrifugal force with;
+\begin{equation}
+\mathbf{v}_C=\frac{m v_\parallel^2}{qB^2}\frac{\mathbf{R}_c\times\mathbf{B}}{R_c^2}
+\end{equation}
+Where the \begin{math} \mathbf{R}_c \end{math} is the vector from the local centre. The magnetic field lines are defined such that \begin{math}dy/B_y=dz/B\end{math} such that \begin{math} R_c^-1\simeq d^2y/dz^2\simeq dB^-1dB_y/dz \end{math}. Giving;
+\begin{equation}
+\mathbf{v}_C=\frac{-m v_\parallel^2\frac{dB_y}{dz}}{qB^2}
+\end{equation}
+If the field has both gradient and curvature drift in \begin{math} \bigtriangledown\mathbf{B} \end{math} with \begin{math} \bigtriangledown\times\mathbf{B}=0\end{math}, then the total drift velocity is;
+\begin{equation}
+\mathbf{v}_B=\frac{\left[(K_\bot+2K_\parallel)(\mathbf{B}\times\bigtriangledown)B\right]}{q B^3} 
+\end{equation}
+
+
+%5
+\section{Magnetic trapping}
+Magnetic trapping is when a particle becomes trapped travelling from a low magnetic region to a high magnetic region, and is unable to escape. The particle continues its helical motion around the field line while it is trapped  \citep{roederer_dynamics_2014}. If we consider a static magnetic field and constant energy for the particle trapped in the field, then the particle will be reflected back on itself, changing its direction of motion at two points where \begin{math} \mathbf{B}=\mathbf{B}_R \end{math}, as it travels along the field lines where \begin{math} \mathbf{B} <\mathbf{B}_R \end{math}. This phenomenon occurs because the particle's velocity parallel to the field line decreases as it approaches the magnetic mirror points \begin{math} B_R \end{math}, and because of conservation of energy the velocity perpendicular therefore increases, causing an increase of gyro-frequency. This occurs until the particle's parallel velocity reaches 0, at which point it is reflected back on itself. The process is illustrated in Figure 19 below;
+\newline
+\begin{figure}[!ht]
+\centering
+\includegraphics[scale=1]{mag.png} 
+\caption{ Magnetic trapping}
+\end{figure}
+\newline
+\FloatBarrier
+
+
+%5.1
+\subsection{Magnetic moment}
+In our actual system the field lines will not be static and our particles' motion will change, therefore each particle will experience a different point at which it is reflected back on itself in the trapping. Some particles will ultimately be able to escape the field lines they are trapped in, hence escaping the radiation belt in our case, while others will become trapped that were not originally in the trapping zone. To understand how particles do this we will need the particle's magnetic moment \begin{math} \mathbf{\mu} \end{math}, which is given as;
+\begin{equation}
+\mathbf{\mu}=i\mathbf{A}
+\end{equation}
+Where A is the area of the circulating electrical current i, and \begin{math} \mu \end{math} the magnetic moment vector perpendicular to the plane A. 
+\newline
+\begin{figure}[!ht]
+\centering
+\includegraphics[scale=1]{mu.png} 
+\caption{$\mu$ magnetic moment}
+\end{figure}
+\newline
+Using the fact that;
+\begin{equation}
+i=\frac{q}{t} \quad \mbox{and}  \quad A=\pi r_\bot^2 
+\end{equation}
+We get that;
+\begin{equation}
+\mu=\frac{q\pi r_{\bot}^2}{t}
+\end{equation}
+As we are considering a circle we get that;
+\begin{equation}
+t=\frac{2\pi r_\bot}{v_\bot}
+\end{equation}
+This simplifies to;
+\begin{equation}
+\mu=\frac{1}{2}r_\bot v_\bot q
+\end{equation}
+From equation (14) and (6) we get that;
+\begin{equation}
+\mu=\frac{\frac{1}{2}v_\bot^2 q}{\omega}=\frac{1}{2}m v_\bot^2\frac{q}{\omega m}
+\end{equation}
+\begin{equation}
+\mu=\frac{K_\bot}{\mathbf{B}}
+\end{equation}
+Where \begin{math} K_\bot \end{math} is the perpendicular kinetic energy, then;
+\begin{equation}
+\frac{d}{dt}\left(\frac{1}{2}mv_\bot^2\right)=\mu\frac{d\mathbf{B}}{dt}
+\qquad 
+\frac{d}{dt}\left(\frac{1}{2}mv_\bot^2\right)=\frac{d}{dt}(\mu\mathbf{B})
+\end{equation}
+These together result in;
+\begin{equation}
+\frac{d\mu}{dt}=0
+\end{equation}
+% Should the fullstop below (after the word 'constant') be a comma?
+Under the fact that \begin{math} \mu \end{math} is approximately constant. \begin{math} \mu \end{math} is an example of an adiabatic invariant, but is only approximately invariant if change of the parameters in the system is sufficiently slow. 
+
+
+
+%5.2
+\subsection{Magnetic mirror}
+If we now consider a particle moving in a inhomogenous field towards a region of increasing magnetic strength, we see from the invariance of  \begin{math} K_\bot/B\end{math} that \begin{math} K_\bot \end{math} is increasing and this must mean that \begin{math} K_\parallel \end{math} is decreasing as energy is conserved. Then there exists a region such that \begin{math} K_\parallel=0 \end{math}; this is our \begin{math} B_R \end{math}. The particle cannot pass though this region and is reflected back on itself, hence this is where our magnetic mirror occurs. We should also note that the pitch angle \begin{math} \theta  \end{math} is defined by \citep{boyd_physics_2003};
+\begin{equation}
+\tan\theta=\frac{v_\bot}{v_\parallel}
+\end{equation}
+From the invariance of \begin{math} \mu=K_\bot/B \end{math} we get that;
+\begin{equation} 
+\frac{\sin^2\theta}{B} =\mbox{constant}
+\end{equation}
+If we define this constant by \begin{math} B_R^-1\end{math} we get that;
+\begin{equation}
+\sin\theta=\left(\frac{B}{B_R}\right)^\frac{1}{2}
+\end{equation}
+Then for a particle to pass though this magnetic mirror it must pass the point where B has reached its maximum value \begin{math} B_R \end{math} before it is reflected. Thus, a particle with a pitch angle where \begin{math} \sin\theta\leq(B/B_R)^\frac{1}{2}\end{math} is not reflected back, but is reflected back if \begin{math} \sin\theta>(B/B_R)^\frac{1}{2}\end{math}.
+
+If we now consider a lost cone with \begin{math} B_0 \end{math} as the magnetic field at the middle of the cone (Figure 21) then that mirror ratio is;
+\begin{equation} 
+R=\frac{B_R}{B_0}
+\end{equation}
+\newline
+\begin{figure}[!ht]
+\centering
+\includegraphics[scale=0.6]{cone.png} 
+\caption{Loss cone}
+\end{figure}
+\newline
+Particles with velocities inside the cone will escape from the mirror and will be reflected when;
+\begin{equation}
+\sin\theta_0>R^-\frac{1}{2}
+\end{equation}
+The solid angle \begin{math} \sigma \end{math} defines the lost cone, with the probability of a particle escaping, P, given by;
+\begin{equation}
+P=\frac{\sigma}{2\pi}=\int_{0}^{\theta_0}\sin\theta d\theta
+\end{equation}
+Then;
+\begin{equation}
+P=1-\left(\frac{R-1}{R}\right)^\frac{1}{2}\simeq\frac{1}{2R}\qquad \textrm{if} \quad R>>1 
+\end{equation}
+So the smaller the mirror ratio, the less likely a particle will escape.
+
+
+%6
+\section{Proton in the Earth's magnetic field} 
+To plot the trajectory of a proton in the magnetic field of the Earth I needed to first convert the field equation into cartesian, starting with the three equations (1) in section 1; 
+\begin{equation}
+B_r=-2B_0\left(\frac{R_E}{r}\right)^3cos(\theta),
+\qquad 
+B_\theta=-B_0\left(\frac{R_E}{r}\right)^3sin(\theta)
+\end{equation} 
+To convert from spherical to cartesian I used;
+\begin{equation} 
+B_x=B_r\mathbf{e}_x\cdot\mathbf{e}_r+B_{\theta}\mathbf{e}_x\cdot\mathbf{e}_{\theta},
+\qquad
+B_y=B_r\mathbf{e}_y\cdot\mathbf{e}_r+B_{\theta}\mathbf{e}_y\cdot\mathbf{e}_{\theta},
+\qquad
+B_z=B_r\mathbf{e}_z\cdot\mathbf{e}_r+B_{\theta}\mathbf{e}_z\cdot\mathbf{e}_{\theta}
+\end{equation}
+Giving the cartesian field equations in terms of spherical coordinates;
+\begin{equation}
+B_x=-\frac{3k_0}{r^3}\cos(\theta)\sin(\theta)\cos(\phi)
+\end{equation}
+\begin{equation}
+B_y=-\frac{3k_0}{r^3}\cos(\theta)\sin(\theta)\sin(\phi)
+\end{equation}
+\begin{equation}
+B_z=\frac{k_0}{r^3}\left(1-3\cos(\theta)^2\right)
+\end{equation}
+Then using the spherical identities to turn the magnetic field into cartesian we get;
+\begin{equation}
+\mathbf{B}=\left[\frac{-3k_0xz}{(x^2+y^2+z^2)^\frac{5}{2}},\frac{-3k_0yz}{(x^2+y^2+z^2)^\frac{5}{2}},\frac{k_0}{(x^2+y^2+z^2)^\frac{5}{2}}(x^2+y^2-2z^2)\right]
+\end{equation}
+The divergence of my vector was \begin{math} \bigtriangledown\cdot\mathbf{B}=0 \end{math}, which confirms that I correctly converted from spherical to cartesian. Swapping the uniform magnetic field in my equation with the magnetic field of the Earth allowed me to plot the trajectory of the particles around Earth using MATLAB.
+
+
+%6.1
+\subsection{Estimates for particles}
+To plot a proton's trajectory I needed appropriate values for its velocity in the (x,y,z) axis. Considering a proton with 1 MeV=\begin{math} 10^6\times1.6022\times10^{-19}\end{math} J, we can approximate the velocity of the proton using the kinetic energy equation;
+\begin{equation}
+\frac{m_p}{2}v^2=K
+\end{equation}
+Then with \begin{math} m_p=1.67e-27\end{math}kg and \begin{math} K=1.6e-13\end{math}J we get an approximation as;
+\begin{equation}
+\mathbf{v}\approx1.41\times0^7 \mbox{ms}^{-1}
+\end{equation}
+Under the assumption that \begin{math} v_\bot \approx v_\parallel \end{math} we get that;
+\begin{equation}
+v_\bot\approx v_\parallel \approx9.889\times10^6\mbox{ms}^{-1}
+\end{equation}
+I numerically calculated approximations for gyro-frequency, Larmor radius and other relevant values to compare with my MATLAB plot and confirm its accuracy. Under the assumption that \begin{math} K_\bot \approx K_\parallel \end{math}, these approximations can be used to estimate the Larmor radius and gyro-frequency of a proton. Letting the proton be two Earth radii away from the Earth and located on the equatorial plane with 1 Mev, the estimated Larmor radius is \begin{math} r_\bot\approx 8849 m \end{math}, with a gyro-frequency of \begin{math} \omega\approx111.6 s\end{math}. We also have that;
+\begin{equation}
+|B|=B_0\left(\frac{R_E}{r}\right)^3\sqrt{1+3cos(\theta)^2}
+\end{equation}
+On the equatorial plane \begin{math} \theta=\pi/2\end{math} making \begin{math}|B|=B_0\left(\frac{R_E}{r}\right)^3 \end{math} at \begin{math}r=3R_E\end{math} we get \begin{math} \mu\approx1.405e-7 \mbox{Am}^2\end{math}. Then using equation (45) to calculate the gradient drift and (55) for curvature drift we get the respective approximations with x=0 and y=\begin{math}3R_E\end{math} as;
+\begin{equation}
+v_G\approx[6.8685e4,0,0],\qquad v_C\approx [1.3737e5,0,0]
+\end{equation}
+\newline
+\newline
+For an electron we get the approximated velocities as;
+\begin{equation}
+v\approx5.93e8 \mbox{ms}^{-1}
+\end{equation}
+\begin{equation}
+v_\bot\approx v_\parallel\approx 4.19e8 \mbox{ms}^{-1 }
+\end{equation}
+This speed is greater then the speed of light, which is impossible, so we must use a different expression to calculate the speed of the electron. From \citet{Taylor_Spacetime_1992} we use;
+\begin{equation}
+K=(\gamma-1)mc^2
+\end{equation}
+\begin{equation}
+\gamma=\frac{1}{(1-\frac{v^2}{c^2})^\frac{1}{2}}
+\end{equation}
+Where c is the speed of light. This results in an electron with 1 Mev of energy having \begin{math} 0.94\% \end{math} the speed of light, which results in the following estimations for the electron;
+\begin{equation}
+v\approx2.82e8 \mbox{ms}^{-1}
+\end{equation}
+\begin{equation}
+v_\bot\approx v_\parallel\approx 1.99e8 \mbox{ms}^{-1} 
+\end{equation}
+\begin{equation}
+\omega\approx 2.058e5 \mbox{s}
+\end{equation}
+\begin{equation}
+r_\bot\approx 966.7 \mbox{m}
+\end{equation}
+\begin{equation}
+\mu\approx1.405e-7 \mbox{Am}^2
+\end{equation}
+\begin{equation}
+v_G\approx[1.51e4, 0, 0]
+\end{equation}
+\begin{equation}
+v_C\approx[3.02e4,0,0] 
+\end{equation}
+Hence as \begin{math} v_C>v_G\end{math} the curvature drift dominates over the gradient drift. The drift estimates suggest that the particle drifts clockwise around the Earth, and give a lower bound for the total time it takes for it to drift completely around, which is because the drift is greatest when on the equatorial plane.
+
+
+%6.2
+\subsection{Plotting particles}
+Using my assumption that \begin{math} v_\bot\approx v_\parallel \end{math}, I get for a 1 Mev proton an initial velocity of [7e6 7e6 9.899e6] splitting the \begin{math} v_\bot \end{math} velocity evenly between the x and y components. For an electron I repeated this process, with an initial velocity of  [1.41 e8 1.41e8 1.99e8]. I set the particles to be two Earth radii away from the surface of the Earth. From the simulation I estimate that it takes the proton 8.43s to bounce off each mirror and back to its original latitude, and 0.241s for an electron;  
+\begin{figure}[h!]
+\centering
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{1Mp.jpg} 
+\caption*{Proton with 1 Mev}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{1Me.jpg}
+\caption*{Electron with 1 Mev}
+\end{subfigure}
+\caption{}
+\end{figure}
+\FloatBarrier
+\noindent
+These plots demonstrate that the particle travels along the magnetic field line until it reaches a certain point and is reflected back, becoming trapped in a region around the Earth. The plot may not be accurate for an electron as this is a nonrelativistic particle, and because of its speed the mass doesn't stay constant. My MATLAB code does not take into account the change of mass of electrons as they approach the speed of light. Left over a longer time the particle drifts around the Earth in a clockwise motion forming a doughnut shape, which can be seen when plotted in 3D (Figure 23). I was unable to plot an electron in 3D that clearly showed this doughnut shape because of the high number of times it is reflected between its two mirror points. In my simulation it takes the proton about 955s to drift completely around the Earth;
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.4]{1Mp3.jpg} 
+\caption{Proton with 1Mev in 3D}
+\end{figure}
+\FloatBarrier
+\noindent
+Using the gradient drift and curvature drift estimations for our 1 Mev proton, the total estimated drift is \begin{math} 2.0637\times 10^5 \mbox{ms}^{-1}\end{math}. Dividing the circumference of \begin{math}2\times3R_E \pi\end{math} by the drift estimate gives us an estimated time to travel completely around the Earth of 581.53 seconds. Plotting a proton over this time frame shows that our estimation is slightly under, which is because the drift decreases as it approaches the magnetic mirror;
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.4]{1MPR.jpg} 
+\caption{Proton with 1Mev top down view}
+\end{figure}
+\FloatBarrier
+\noindent
+Determining the position of the magnetic mirror and calculating its drift at that point results in an over estimate of the time. Considering that the initial pitch angle is \begin{math}\theta=\pi/4\end{math} and the magnetic mirror is located at the point where the pitch angle becomes \begin{math} \theta=\pi/2 \end{math}, we get that the position of the northern magnetic mirror on the plane \begin{math}x=0\end{math} is [0 1.488e7 6.34e6]. 
+\newline
+\newline
+% Does this last sentence make sense? What is the 1:1 ratio referring to?
+At this position, given that \begin{math}v_\parallel=0 \mbox{ and } v_\bot=14e6\end{math}, we find that total drift of the proton is \begin{math} 84472 \mbox{ms}^{-1}\end{math}. This gives an estimated time of 1438.5 seconds. Since a proton passing the equatorial plane and mirror point is a 1:1 ratio we can estimate its time with;
+\begin{equation}
+\frac{(581.53)+(1438.5)}{2}=1010.02\mbox{s}
+\end{equation}
+Plotting a proton over this time gives us an estimation that is within 50 seconds of the actual time a proton takes to drift around the Earth in my simulation;
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.3]{9Mp.jpg} 
+\caption{1Mev Proton over 1010.02 s}
+\end{figure}
+\FloatBarrier
+\noindent
+If we look at the geometric average with \begin{math} (t_1\times t_2)^{1/2}\end{math} we get 1551.6s, which is actually less accurate then equation (95).
+ Now if we consider plotting a proton with twice the mass of a normal proton we can see that it takes the particle about 237.5 seconds to go half way around the Earth, while a normal proton only travels 1/4 away around the Earth in this time;
+\begin{figure}[h!]
+\centering
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{05p.jpg} 
+\caption*{Proton with double mass}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{1p.jpg}
+\caption*{Proton over same time period}
+\end{subfigure}
+\caption{}
+\end{figure}
+\FloatBarrier 
+\noindent
+If we also double the speed of the initial velocities from [7e6 7e6 9.89e6]  to [14e6 14e6 1.978e7] and keep the mass the same as a normal proton, we see that it travels \begin{math} 2^2\end{math} times further;
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.3]{2vp.jpg} 
+\caption{Proton with 1 Mev top down view}
+\end{figure}
+\FloatBarrier
+\noindent
+We can therefore conclude that a 1 Mev electron, which has 1/1842 times the mass but is about 20.14 times faster than a proton, will take approximately 4198 seconds to go around the Earth (roughly 1 hour and 10 minutes). Unfortunately I was unable to plot this on MATLAB because of the number of times the electron was reflected between its two magnetic mirrors, which meant that I couldn't run the model over a long period of time. The accuracy of the estimation is also limited because it does not take into account the electron's change in mass. Using the estimations for the drift of an electron approximates the time taken to be 4202.56 seconds.
+\newline
+\newline
+ Let us change the initial pitch angle of our particle and consider two cases: (1) one in which \begin{math}v_\parallel=0\end{math}, such that the initial pitch angle is \begin{math}pi/2 \end{math}, and thus the mirror points are both on the equatorial plane and the particle drifts around the Earth without any motion in the z-direction; and (2) where \begin{math}v_\parallel=2v_\bot\end{math}, which brings the mirror points closer to the Earth. In the first case we find a total drift of about \begin{math} 1.3766e5 \mbox{ms}^{1}\end{math}, as the curvature drift will be equal to zero. Plotting this proton with its initial velocity as [9.899e6 9.899e6 0] over an estimated time of 872.2 seconds plots it travelling almost exactly once round the Earth;
+ \begin{figure}[h!]
+\centering
+\includegraphics[scale=0.3]{pitch0.jpg} 
+\caption{Proton with pitch angle of $\pi/2$}
+\end{figure}
+\FloatBarrier
+\noindent
+Looking at the second case, the magnetic mirror on the x=0 plane will be located at [0 1.023e7 7.35e6] and will have a drift speed of \begin{math}2.4701\times 10^5\mbox{ms}^{-1}\end{math} on the equatorial plane and \begin{math}1.3766\times10^5\mbox{ms}^{-1}\end{math} drift speed on the magnetic mirror. With equation (95) we get an estimated time to go 1/4 around the Earth of 377.6 seconds, which results in;
+\begin{figure}[h!]
+\centering
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{Lpitch.jpg} 
+\caption*{Proton with $v_\bot=2v_\parallel$}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\linewidth}
+\includegraphics[width=\linewidth]{Lpitcht.jpg}
+\caption*{Over 377.6}
+\end{subfigure}
+\caption{}
+\end{figure}
+\FloatBarrier 
+\noindent
+We see that equation (95) begins to break down when the pitch angle tends towards 0. To improve the accuracy I included another point between the mirror point and the initial position, with its initial position at \begin{math} \theta=1.259 \mbox{ and } r=1.73e7\end{math}, which in cartesian would be [0 1.65e7 5.31e6]. Assuming \begin{math}v_\parallel\end{math} decreases linearly, we can estimate that at this point \begin{math} v_\parallel\approx6.25e6\end{math} and \begin{math}v_\bot\approx1.25e7\end{math}, which gives a drift velocity of \begin{math}1.2251\times10^5\mbox{ms}^{-1} \end{math} using;
+\begin{equation}
+\frac{( 486.10)+(3043.7)+(980.12)}{3}=1503.31
+\end{equation} 
+This has become slightly smaller and hence is more accurate. Increasing the number of points we take should make the time tend toward the correct answer. We can summarise this approach using the equation;
+\begin{equation}
+\frac{(\mbox{time for equatorial plane})+\sum_{n=1}^{j} (\mbox{time for other points})}{1+j}
+\end{equation}
+Where the other points are on the line \begin{math}r=\beta R_E\cos\theta^2\end{math} between the two mirror points, and where \begin{math}\beta\end{math} is the distance of the particle on the equatorial plane from the centre of the Earth and j is the number of other points used. The more points specified, the more accurate the time estimation will become. 
+
+%7
+\section{Conclusion}
+In conclusion, the model that I have made accurately draws the path around the Earth that a nonrelativistic particle close to Earth would take. It begins to break down when considering high energy electrons. The mass of an electron changes as the particle travels faster, and therefore this model can only give a rough estimate of the time taken for electrons to travel around the Earth.
+\newline 
+\newline
+The model holds for protons, which are arguably our main focus. Protons have a much larger mass, and are therefore the main cause of the radiation in the Van Allen radiation belts. Understanding how long it takes for a proton to move around the Earth allows us to calculate how strong the radiation is throughout the belt. This in turn allows us to identify which region is safe for people to travel though, and how much protective material they would need to be safe from high doses of radiation.
+\newline
+\newline
+To advance the findings of my project, I would focus on calculating the percentage of time that the particle spends in each region of its path. From this, I could calculate where most of the particles will be in the belts and hence the highest region of radiation. It would also be desirable to develop a simulation that could take into account the change in mass for relativistic particles.
+\pagebreak
+
+%8
+\section{Code}
+\subsection{Code for particle in uniform field}
+\lstinputlisting[language=Matlab]{p3D.m}
+\subsection{Code for plotting dipoles of Earth}
+\lstinputlisting[language=Matlab]{dipole.m}
+\subsection{Code for a particle in the Earth's magnetic field}
+\lstinputlisting[language=Matlab]{test.m}
+
+
+%\section*{References}
+%Garner, R. (2018) Studying the Van Allen Belts 60 Years After America’s First Spacecraft, NASA. Available at: http://www.nasa.gov/feature/goddard/2018/studying-the-van-allen-belts-60-years-after-america-s-first-spacecraft (Accessed: 21 November 2018).
+%\newline
+%Peter A.Sturrock, Plasma Physics an introduction to the Thoery of Astrophyscial, Geophysical and Labortartory Plasmas. 19-62 (1994)
+%\newline
+%J.A.VanAllen,G.H.Ludwig, E.C.Ray, C.E.McIlwain, Observations of high intensity radiation by satellites 1958 Alpha and Gamma. 588–592 (1958) 
+%\newline
+%Juan G.Roederer, Hui Zhang, Dynamics of Magnetically Trapped Particles, 2nd Edition. (2014)
+%\newline
+%Peter A.Sturrock, Plasma Physics an introduction to the Thoery of Astrophyscial, Geophysical and Labortartory Plasmas. 19-62 (1994)
+%\newline
+%Zell, H. (2017) Van Allen Probes Mission Overview, NASA. Available at:
+%\newline $http://www.nasa.gov/mission_pages/rbsp/mission/index.html$
+%(Accessed: 21 November 2018).
+%\newline
+%University Corporation for Atmospheric Research (2018) Earth’s Dipole Magnetic Field | UCAR Center for Science Education. Available at: https://scied.ucar.edu/Earths-dipole-magnetic-field (Accessed: 22 November 2018).
+
+
+\bibliography{refs}
+
+\end{document}
+
